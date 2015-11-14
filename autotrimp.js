@@ -1,7 +1,4 @@
-//Old load notifications
-//document.getElementById("food").appendChild(document.createTextNode("*"));
-
-//globals-why weren't they here earlier?
+//globals
 var gobj = {};
 var hobj = {};
 var aobj = {};
@@ -9,14 +6,19 @@ var hkeysSorted = [];
 var premapscounter = 0;
 var buildcounter = 0;
 var autoTSettings = {};
-var version = "0.34b";
-var testhealth = 0;
-var testblock = 0;
-var testattack = 0;
+var version = "0.37b";
+var wasgathering = "";
+var badguyMinAtt = 0;
+var badguyMaxAtt = 0;
+var badguyFast = false;
+var mysoldiers = 0;
+var mytoughness = 0;
+var blockformation = 1;
+var healthformation = 1;
+var myblock = 0;
+var myhealth = 0;
 
 //Line things up, OCD FTW!
-//fixed !! document.getElementById("buyCol").style.paddingRight = ".3%";
-//fixed !!document.getElementById("rightCol").style.paddingLeft = ".3%";
 document.getElementById("helium").style.height = "32.4%";
 document.getElementById("boneFlavorRow").innerHTML = "The Bone Trader trades bones for...bonuses"
 
@@ -26,7 +28,7 @@ document.getElementById("boneBtnMain").innerHTML = "Bone Trader (" + game.global
 
 //setup talk button
 document.getElementById("buildingsQueue").style = "width: 75%; float: left;";
-document.getElementById("queueContainer").insertAdjacentHTML('beforeend', '<div style="color: rgb(255, 255, 255); font-size: 1.2em; text-align: center; width: 25%; float: right; padding-left: 1.1vw;"><div id="buildingsCollectBtn" class="workBtn pointer noselect" onclick="talk()" style="background: rgb(0, 0, 0) none repeat scroll 0% 0%; margin-top: 0.3vh;">Talk</div></div>');
+document.getElementById("queueContainer").insertAdjacentHTML('beforeend', '<div id="talkDiv" style="color: rgb(255, 255, 255); font-size: 1.2em; text-align: center; width: 25%; float: right; padding-left: 1.1vw; padding-right: .45vw;"><div id="talkBtn" class="workBtn pointer noselect" onclick="talk()" style="background: rgb(0, 0, 0) none repeat scroll 0% 0%; margin-top: 0.3vh; display: none;">Talk</div></div>');
 
 //setup talk window
 document.getElementById("boneWrapper").insertAdjacentHTML('beforebegin', '<div id="autotrimp" style="position: absolute; background: rgb(153, 153, 153) none repeat scroll 0% 0%; border: 2px solid rgb(0, 0, 0); width: 64vw; margin: 6vh 18vw; z-index: 10000000; text-align: center; font-size: 1.3vw; display: none; padding: 0.2vw; color: rgb(255, 255, 255);"><div style="width: 100%; display: table; border-spacing: 0.3vw;" id="autotrimp0"><div style="display: table-row;" id="autorow"><div style="border: 1px solid white; background: rgb(84, 83, 83) none repeat scroll 0% 0%; display: table-cell; width: 20%;" id="pic"><img style="max-height: 13vw;" src="https://cloud.githubusercontent.com/assets/14081390/9893516/d9db4782-5bde-11e5-8791-91638bb6aaae.jpg"></div><div id="qs" style="border: 1px solid white; background: rgb(84, 83, 83) none repeat scroll 0% 0%; display: table-cell; width: 60%; vertical-align: top; padding: 0.5%;"><p style="text-align: left; font-size: 0.9em;" id="q">This is the question.</p><p></p><p style="font-size: 0.8em;"><a style="color: rgb(124, 202, 228); text-decoration: underline;" href="#" id="1" onclick="alert(\'clicked\')">Answer 1</a></p><p style="font-size: 0.8em;"><a style="color: rgb(124, 202, 228); text-decoration: underline;" href="#" id="2" onclick="alert(\'clicked\')">Answer 2</a></p><p style="font-size: 0.8em;"><a style="color: rgb(124, 202, 228); text-decoration: underline;" href="#" id="3" onclick="alert(\'clicked\')"></a></p></div><div id="button" style="display: table-cell; width: 20%; background: rgb(153, 153, 153) none repeat scroll 0% 0%; vertical-align: top;"><div class="boneBtn dangerColor pointer noselect" onclick="document.getElementById(\'autotrimp\').style.display = \'none\'">Close</div></div></div></div></div>');
@@ -47,7 +49,7 @@ conversation[6] = {Q:"Keep going. Maybe we'll find some answers. Since we're fri
 conversation[7] = {Q:"I can tell the trimps to build storage buildings before they get full. I can also buy Gyms and Tributes as soon as we can afford them, and read some upgrade books to you and the trimps when you're not available.",R1:"Which upgrade books?",L1:8, R2:"What else?", L2:9};
 conversation[8] = {Q:"The upgrades I can read are: Speedfarming, Speedlumber, Speedminer, Speedscience, (all the Mega versions too), Efficiency, TrainTacular, Gymystic, Potency, Egg, UberHut, UberHouse, UberMansion, UberHotel, UberResort, and Bounty",R1:"Ok, cool",L1:9};
 conversation[9] = {Q:"I can also highlight the housing that makes the most use of our gems, and the equipment that makes the best use of our metal.",R1:"Cool, what else?",L1:10};
-conversation[10] = {Q:"I'll bring us back to the world if we idle on the premap screen too long and I'll send you back to science-ing if you stay building on an empty queue. I can also <b>unteach</b> Shieldblock.",R1:"Why unteach Shieldblock?",L1:11, R2:"Anything else?",L2:12};
+conversation[10] = {Q:"I'll bring us back to the world if we idle on the premap screen too long and I'll switch you between gathering and building depending on our build queue. I can also <b>unteach</b> Shieldblock.",R1:"Why unteach Shieldblock?",L1:11, R2:"Anything else?",L2:12};
 conversation[11] = {Q:"As we learn more and more Gymystic, our shields becomes less and less useful for blocking. The extra health comes in real handy post z60.",R1:"I get it.",L1:12};
 conversation[12] = {Q:"I can help you respec the portal perks if you've already done it this round, and I can automatically flip between Dominance and Heap formations depending on the enemy we're facing.",R1:"Ok.",L1:13};
 conversation[13] = {Q:"That's it for now, but I'll let you know if I pick up any more tricks. Use the buttons below to let me know what you'd like done.",R1:"Ok.",L1:2};
@@ -63,14 +65,13 @@ else {
 	var autobuildings = {enabled: 0, description: "Automatically buy storage buildings when they're 90% full", titles: ["Not Buying", "Buying"]};
 	var autogymbutes = {enabled: 0, description: "Automatically buy gyms and tributes when we can afford them", titles: ["Not Buying", "Buying Both", "Gyms Only", "Tributes Only"]};
 	var autoupgrades = {enabled: 0, description: "Automatically read certain upgrade books to you and the trimps", titles: ["Not Reading", "Reading"]};
-//	var autohousing = {enabled: 0, description: "Highlight the most gem-efficient housing in green", titles: ["Not Highlighting", "Highlighting"]};
-//	var autoequipment = {enabled: 0, description: "Highlight the most metal-efficient equipment in blue and red", titles: ["Not Highlighting", "Highlighting"]};
 	var autohighlight = {enabled: 0, description: "Highlight the most gem-efficient housing in green and the most metal-efficient equipment in blue and red", titles: ["Not Highlighting", "Highlighting All", "Housing Only", "Equipment Only"]};
 	var autopremaps = {enabled: 0, description: "Bring us back to the world if we're in the premaps screen for 30 seconds", titles: ["Not Switching", "Switching"]};
-	var autoscience = {enabled: 0, description: "I'll send you back to work on science if you've been trying to build on an empty queue for 30 seconds", titles: ["Not Switching", "Switching"]};
+	var autogather = {enabled: 0, description: "I'll make you switch between gathering and building depending on our build queue", titles: ["Not Switching", "Switching"]};
 	var autoformations = {enabled: 0, description: "Automatically switch between Heap and Dominance formations based on enemy", titles: ["Not Switching", "Switching"]};
 	var autosnimps = {enabled: 0, description: "I'll automatically buy items to help us get past snimps, squimps, and other fast enemies", titles: ["Not Avoiding", "Avoiding"]};
-	autoTSettings = {versioning: version, autobuildings: autobuildings, autogymbutes: autogymbutes, autoupgrades: autoupgrades, autohighlight: autohighlight, autopremaps: autopremaps, autoscience: autoscience, autosnimps: autosnimps, autoformations: autoformations};
+	var automapbmax = {enabled: 0, description: "I'll manage turning map repeat on and off so we can reach the max map bonus", titles: ["Not Managing", "Managing"]};
+	autoTSettings = {versioning: version, autobuildings: autobuildings, autogymbutes: autogymbutes, autoupgrades: autoupgrades, autohighlight: autohighlight, autopremaps: autopremaps, autogather: autogather, automapbmax: automapbmax, autosnimps: autosnimps, autoformations: autoformations};
 }
 
 //add buttonss
@@ -151,7 +152,7 @@ function updateHousingHighlighting() {
 }
 
 function updateHealthHighlighting() {
-	var ahealth = ["Boots", "Helmet", "Pants", "Shoulderguards", "Breastplate"];
+	var ahealth = ["Boots", "Helmet", "Pants", "Shoulderguards", "Breastplate", "Gambeson"];
 	var ghealth = [];
 	for (aheal in ahealth) {
 		if (game.equipment[ahealth[aheal]].locked == 0) {
@@ -177,7 +178,7 @@ function updateHealthHighlighting() {
 }
 
 function updateAttackHighlighting() {
-	var aAttacking = ["Dagger", "Mace", "Polearm", "Battleaxe", "Greatsword"];
+	var aAttacking = ["Dagger", "Mace", "Polearm", "Battleaxe", "Greatsword", "Arbalest"];
 	var gAttacking = [];
 	for (aAttack in aAttacking) {
 		if (game.equipment[aAttacking[aAttack]].locked == 0) {
@@ -267,6 +268,9 @@ if (autoTSettings.autopremaps.enabled == 1 && game.global.preMapsActive) {
 			premapscounter += 1;
 			break;
 		case 3:
+			premapscounter += 1;
+			break;
+		case 4:
 			premapscounter = 0;
 			mapsClicked();
 			break;
@@ -275,31 +279,27 @@ if (autoTSettings.autopremaps.enabled == 1 && game.global.preMapsActive) {
 	premapscounter = 0;
 }
 
-//check to see if we're building on an empty queue
-if (autoTSettings.autoscience.enabled == 1 && document.getElementById('noQueue').style.display == "block" && game.global.playerGathering == "buildings") {
-	switch (buildcounter) {
-		case 0:
-			buildcounter += 1;
-			break;
-		case 1:
-			buildcounter += 1;
-			break;
-		case 2:
-			buildcounter += 1;
-			break;
-		case 3:
-			buildcounter = 0;
-			if (game.global.challengeActive != 'Scientist') {
-				setGather('science');
-			}
-			break;
+//Manage Map Repeat
+if (autoTSettings.automapbmax.enabled == 1 && game.global.mapsActive && !game.global.preMapsActive) {
+	if (game.global.mapsOwnedArray[getMapIndex(game.global.currentMapId)].noRecycle) {
+		if (game.global.repeatMap) {
+			repeatClicked();
+		}
+	}else {
+		if (game.global.mapBonus == 9 && game.global.repeatMap) {
+			repeatClicked();
+		} else if (game.global.mapBonus != 9 && !game.global.repeatMap) {
+			repeatClicked();
+		}
 	}
-} else {
-	buildcounter = 0;
+	if (!document.getElementById("repeatBtn").innerHTML.endsWith("*")) {
+		document.getElementById("repeatBtn").appendChild(document.createTextNode("*"))
+	}
+} else if (autoTSettings.automapbmax.enabled == 0 && game.global.mapsActive && !game.global.preMapsActive) {
+	document.getElementById("repeatBtn").innerHTML = (game.global.repeatMap) ? "Repeat On" : "Repeat Off";
 }
 
 //Buy gyms
-
 if (autoTSettings.autogymbutes.enabled == 1 || autoTSettings.autogymbutes.enabled == 2) {
 	if (getBuildingItemPrice(game.buildings.Gym, "wood", false)*2 <= game.resources.wood.owned && game.buildings.Gym.locked == 0) {
 		buyBuilding('Gym');
@@ -411,15 +411,12 @@ if (removebadge) {
 localStorage.setItem("autotrimpsave",JSON.stringify(autoTSettings));
 
 //check for portal/reset
-var loglength = log.childElementCount;
-if (loglength > 4) {loglength = 4;}
-for (j=1; j < loglength; j++) {
-	if ((log.childNodes[log.childElementCount-j].innerHTML).lastIndexOf('green shimmer') != -1) {
-		for (item in autoTSettings) {
-			if (item != "versioning") {
-				while (autoTSettings[item].enabled != 0) {
-					toggleAutoSetting(item);
-				}
+if (game.global.gridArray.length == 0) {
+	document.getElementById("talkBtn").style.display = "none";
+	for (item in autoTSettings) {
+		if (item != "versioning") {
+			while (autoTSettings[item].enabled != 0) {
+				toggleAutoSetting(item);
 			}
 		}
 	}
@@ -429,17 +426,21 @@ for (j=1; j < loglength; j++) {
 }//end loop
 
 function newTimer() {
-
-	var badguyMinAtt = game.global.gridArray[game.global.lastClearedCell + 1].attack * .805; //fudge factor
-	var badguyMaxAtt = game.global.gridArray[game.global.lastClearedCell + 1].attack * 1.2;
-	if (game.global.mapsActive){
-		badguyMinAtt = game.global.mapGridArray[game.global.lastClearedMapCell + 1].attack * .805;
-		badguyMaxAtt = game.global.mapGridArray[game.global.lastClearedMapCell + 1].attack * 1.2;
+	if (game.global.gridArray.length != 0) {
+		document.getElementById("talkBtn").style.display = "block";
 	}
-	var mysoldiers = (game.portal.Coordinated.level) ? game.portal.Coordinated.currentSend : game.resources.trimps.maxSoldiers ;
-	var mytoughness = (game.portal.Toughness.level * game.portal.Toughness.modifier * 100) + 100;
-	var blockformation = 1;
-	var healthformation = 1;
+	badguyMinAtt = game.global.gridArray[game.global.lastClearedCell + 1].attack * .805; //fudge factor
+	badguyMaxAtt = game.global.gridArray[game.global.lastClearedCell + 1].attack * 1.19;
+	badguyFast = game.badGuys[game.global.gridArray[game.global.lastClearedCell + 1].name].fast;
+	if (game.global.mapsActive && !game.global.preMapsActive){
+		badguyMinAtt = game.global.mapGridArray[game.global.lastClearedMapCell + 1].attack * .805;
+		badguyMaxAtt = game.global.mapGridArray[game.global.lastClearedMapCell + 1].attack * 1.19;
+		badguyFast = game.badGuys[game.global.mapGridArray[game.global.lastClearedMapCell + 1].name].fast;
+	}
+	mysoldiers = (game.portal.Coordinated.level) ? game.portal.Coordinated.currentSend : game.resources.trimps.maxSoldiers ;
+/*	mytoughness = (game.portal.Toughness.level * game.portal.Toughness.modifier * 100) + 100;
+	blockformation = 1;
+	healthformation = 1;
 	switch (game.global.formation) {
 		case 1:
 			healthformation = 4;
@@ -453,13 +454,27 @@ function newTimer() {
 			healthformation = .5;
 			blockformation = 4;
 		break;
-	}
-	var myblock = game.global.block * game.jobs.Trainer.owned * game.jobs.Trainer.modifier * mysoldiers * blockformation;
-	var myhealth = game.global.health * mysoldiers * mytoughness * healthformation;
+	}*/
+	//myblock = game.global.block * game.jobs.Trainer.owned * game.jobs.Trainer.modifier * mysoldiers * blockformation;
+	myblock = game.global.soldierCurrentBlock;
+	//myhealth = game.global.health * mysoldiers * mytoughness * healthformation;
+	myhealth = game.global.soldierHealthMax;
 
+	//avoid snimps
+	if (autoTSettings.autosnimps.enabled == 1) {
+		if (autoTSettings.autohighlight.enabled == 0 || autoTSettings.autohighlight.enabled == 2) {
+			toggleAutoSetting("autohighlight");	
+			toggleAutoSetting("autohighlight");	
+			toggleAutoSetting("autohighlight");	
+		}
+		if (badguyFast && badguyMinAtt > (myblock + myhealth) && game.global.formation != 2) {
+			console.log(game.global.formation)
+			message("You're stuck on a fastenemy. I would fix this by buying a level of " + hkeysSorted[0] + ".", "Loot", "*eye2", "exotic")	
+		}
+	}
 
 	if (autoTSettings.autoformations.enabled == 1 && game.upgrades.Dominance.done == 1)	{
-		if (game.global.mapsActive){
+		if (game.global.mapsActive && !game.global.preMapsActive){
 			if (game.badGuys[game.global.mapGridArray[game.global.lastClearedMapCell + 1].name].fast) {
 				if (game.global.formation == 2 && myblock < badguyMaxAtt) {setFormation(1);}
 			} else {
@@ -474,19 +489,18 @@ function newTimer() {
 		}
 	}
 	
-	//avoid snimps
-	if (autoTSettings.autosnimps.enabled == 1) {
-		if (autoTSettings.autohighlight.enabled == 0 || autoTSettings.autohighlight.enabled == 2) {
-			toggleAutoSetting("autohighlight");	
-			toggleAutoSetting("autohighlight");	
-			toggleAutoSetting("autohighlight");	
+	//check to see if we're building on an empty queue, or if we're gathering when there's building to be done
+	if (autoTSettings.autogather.enabled == 1) {
+		if (game.global.playerGathering != "buildings") {
+			wasgathering = game.global.playerGathering;
 		}
-		
-		testblock = myblock;
-		testhealth = myhealth;
-		testattack = badguyMinAtt;
-		if (badguyMinAtt > (myblock + myhealth)) {
-			message("You're stuck on a fastenemy. I would fix this by buying a " + hkeysSorted[0] + ".", "Loot", "*eye2", "exotic")	
+		if (game.global.buildingsQueue.length > 0 && !game.global.buildingsQueue[0].startsWith("Trap") && game.global.playerGathering != "buildings") {
+			setGather('buildings');
+		} else if (game.global.buildingsQueue.length == 0 && wasgathering != "") {
+			setGather(wasgathering);
+		} else if (game.global.buildingsQueue.length > 0 && game.global.buildingsQueue[0].startsWith("Trap") && game.global.playerGathering == "buildings" && wasgathering != "") {
+			setGather(wasgathering);
 		}
 	}
+	
 }//end new loop
